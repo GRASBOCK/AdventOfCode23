@@ -5,7 +5,6 @@ use regex::Regex;
 fn parse_input(input: &str) -> Vec<Game> {
     fn parse_line(line: &str) -> Game {
         let re = Regex::new(r"Game (?<id>\d*):").unwrap();
-        println!("{line}");
         let caps = re.captures(line).unwrap();
         let id = caps["id"].parse::<u32>().unwrap();
 
