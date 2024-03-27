@@ -1,8 +1,21 @@
+use regex::Regex;
+
 type Scratchcard = (u32, Vec<u32>, Vec<u32>);
 
 fn parse_input(input: &str) -> Vec<Scratchcard> {
     fn parse_line(line: &str) -> Scratchcard {
-        (0, vec![], vec![])
+        let re = Regex::new(r"Card (?<id>\d*):").unwrap();
+        let caps = re.captures(line).unwrap();
+        let id = caps["id"].parse::<u32>().unwrap();
+
+        let after_colon = line.split(":").skip(1).next().expect("Nothing after \":\"");
+        let mut iterator = after_colon.split("|");
+        let extract_numbers = |numbers_str: &str| -> Vec<u32>{
+            numbers_str.split(" ").filter(|n_str| n_str.len() > 0).map(|n_str| n_str.parse::<u32>().unwrap()).collect()
+        };
+        let winning_numbers = extract_numbers(iterator.next().unwrap());
+        let have_numbers = extract_numbers(iterator.next().unwrap());
+        (id, winning_numbers, have_numbers)
     }
     
     input.lines().map(|line| parse_line(line)).collect()
