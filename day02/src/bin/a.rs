@@ -1,11 +1,33 @@
 type CubeSet = (u32, u32, u32);
 type Game = (u32, Vec<CubeSet>);
+use regex::Regex;
 
 fn parse_input(input: &str) -> Vec<Game> {
     fn parse_line(line: &str) -> Game {
-        (0, vec![])
+        let re = Regex::new(r"Game (?<id>\d*):").unwrap();
+        println!("{line}");
+        let caps = re.captures(line).unwrap();
+        let id = caps["id"].parse::<u32>().unwrap();
+
+        let mut sets = Vec::new();
+        let re = Regex::new(r"(?<number>\d*)\s(?<color>green|red|blue)").unwrap();
+        for substr in line.split(";") {
+            let mut cubeset = (0, 0, 0);
+            for cap in re.captures_iter(substr) {
+                let n = cap["number"].parse::<u32>().unwrap();
+                let c = &cap["color"];
+                match c {
+                    "red" => cubeset.0 = n,
+                    "green" => cubeset.1 = n,
+                    "blue" => cubeset.2 = n,
+                    _ => panic!("unknown color"),
+                }
+            }
+            sets.push(cubeset);
+        }
+        (id, sets)
     }
-    
+
     input.lines().map(|line| parse_line(line)).collect()
 }
 
@@ -22,7 +44,7 @@ fn solve(games: &Vec<Game>) -> u32 {
                 possible = false;
             }
         }
-        if possible{
+        if possible {
             total += id;
         }
     }
