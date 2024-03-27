@@ -4,7 +4,7 @@ type Scratchcard = (u32, Vec<u32>, Vec<u32>);
 
 fn parse_input(input: &str) -> Vec<Scratchcard> {
     fn parse_line(line: &str) -> Scratchcard {
-        let re = Regex::new(r"Card (?<id>\d*):").unwrap();
+        let re = Regex::new(r"Card\s*(?<id>\d*):").unwrap();
         let caps = re.captures(line).unwrap();
         let id = caps["id"].parse::<u32>().unwrap();
 
