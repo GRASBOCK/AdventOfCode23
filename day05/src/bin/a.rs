@@ -6,13 +6,13 @@ type Almanac = (Seeds, [Category; 7]);
 fn category_map(category: &Category, val: u64) -> u64{
     let mut mapping = None;
     for m in category{
-        let (dest_start, source_start, len) = *m;
+        let (_, source_start, len) = *m;
         if source_start <= val && val <= source_start + len{
             // within mapping
             mapping = Some(m); 
         }
     }
-    if let Some((dest_start, source_start, len)) = mapping{
+    if let Some((dest_start, source_start, _)) = mapping{
         let offset = val - source_start;
         dest_start + offset 
     }else{
@@ -22,17 +22,22 @@ fn category_map(category: &Category, val: u64) -> u64{
 
 fn parse_input(input: &str) -> (Seeds, [Category; 7]) {
     fn parse_seeds(line: &str) -> Seeds {
-        vec![]
+        line.split(":").skip(1).next().unwrap().split(" ").filter(|s| s.len() > 0).map(|s| s.parse::<u64>().unwrap()).collect()
     }
     fn parse_mapping(line: &str) -> Mapping {
-        (0, 0, 0)
+        let values: Vec<u64> = line.split(" ").filter(|s| s.len() > 0).map(|s| s.parse::<u64>().unwrap()).collect();
+        (values[0], values[1], values[2])
     }
+    
     let first_line = input.lines().take(1).next().unwrap();
+    let categories: Vec<Category> = input.split("\n\n").skip(1).map(|category_str| 
+        category_str.split(":").skip(1).next().unwrap().lines().filter(|s| s.len() > 0).map(|line| parse_mapping(line)).collect()
+    ).collect();
     let seeds: Seeds = parse_seeds(first_line);
     input.split(":\n");
-    // todo split by category
-    let category: Category = input.lines().map(|line| parse_mapping(line)).collect();
-    (seeds, [category, vec![], vec![], vec![], vec![], vec![], vec![]])
+    let mut a: [Category; 7] = Default::default();
+    a.clone_from_slice(&categories[0..7]);
+    (seeds, a)
 }
 
 fn solve(almanac: &Almanac) -> u64 {
