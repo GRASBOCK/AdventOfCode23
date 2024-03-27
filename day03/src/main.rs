@@ -58,14 +58,14 @@ fn part_numbers(input: &str) -> Vec<u64> {
     part_numbers
 }
 
-fn solve(input: &str) -> u64{
+fn solve_part1(input: &str) -> u64{
     part_numbers(input).iter().sum()
 }
 
 fn main() {
-    let input = include_str!("../../input");
+    let input = include_str!("../input");
 
-    println!("{}", solve(input));
+    println!("Part 1: {}", solve_part1(input));
 }
 
 #[cfg(test)]
@@ -91,7 +91,7 @@ mod tests {
     }
 
     #[test]
-    fn test_solve() {
-        assert_eq!(solve(EXAMPLE), 4361);
+    fn test_solve_part1() {
+        assert_eq!(solve_part1(EXAMPLE), 4361);
     }
 }

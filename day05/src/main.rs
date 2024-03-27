@@ -40,7 +40,7 @@ fn parse_input(input: &str) -> (Seeds, [Category; 7]) {
     (seeds, a)
 }
 
-fn solve(almanac: &Almanac) -> u64 {
+fn solve_part1(almanac: &Almanac) -> u64 {
     let mut results = vec![[0; 8]; almanac.0.len()];
     for (i, &seed) in almanac.0.iter().enumerate() {
         let vals = &mut results[i];
@@ -54,10 +54,10 @@ fn solve(almanac: &Almanac) -> u64 {
 }
 
 fn main() {
-    let input = include_str!("../../input");
+    let input = include_str!("../input");
     let almanac = parse_input(input);
 
-    println!("{}", solve(&almanac));
+    println!("Part 1: {}", solve_part1(&almanac));
 }
 
 #[cfg(test)]
@@ -121,8 +121,8 @@ humidity-to-location map:
     }
 
     #[test]
-    fn test_solve() {
+    fn test_solve_part1() {
         let almanac = example_almanac!();
-        assert_eq!(solve(&almanac), 35);
+        assert_eq!(solve_part1(&almanac), 35);
     }
 }

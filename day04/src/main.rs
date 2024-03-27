@@ -21,7 +21,7 @@ fn parse_input(input: &str) -> Vec<Scratchcard> {
     input.lines().map(|line| parse_line(line)).collect()
 }
 
-fn solve(scratchcards: &Vec<Scratchcard>) -> u32 {
+fn solve_part1(scratchcards: &Vec<Scratchcard>) -> u32 {
     let mut total = 0;
     for (_id, winning, have) in scratchcards {
         let mut worth = 0; 
@@ -40,10 +40,10 @@ fn solve(scratchcards: &Vec<Scratchcard>) -> u32 {
 }
 
 fn main() {
-    let input = include_str!("../../input");
+    let input = include_str!("../input");
     let games = parse_input(input);
 
-    println!("{}", solve(&games));
+    println!("Part 1: {}", solve_part1(&games));
 }
 
 #[cfg(test)]
@@ -78,8 +78,8 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11";
     }
 
     #[test]
-    fn test_solve() {
+    fn test_solve_part1() {
         let scratchcards = example_scratchcards!();
-        assert_eq!(solve(&scratchcards), 13);
+        assert_eq!(solve_part1(&scratchcards), 13);
     }
 }

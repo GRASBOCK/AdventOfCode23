@@ -16,7 +16,7 @@ fn last_digit(line: &str) -> u32{
     panic!("No digits in line {}", line)
 }
 
-fn solve(input: &str) -> u32{
+fn solve_part1(input: &str) -> u32{
     let mut total = 0u32; 
     for line in input.lines(){
         total += first_digit(line)*10 + last_digit(line);
@@ -25,8 +25,8 @@ fn solve(input: &str) -> u32{
 }
 
 fn main(){
-    let input = include_str!("../../input");
-    println!("{}", solve(&input));
+    let input = include_str!("../input");
+    println!("Part 1: {}", solve_part1(&input));
 }
 
 #[cfg(test)]
@@ -48,6 +48,6 @@ mod tests {
     #[test]
     fn test() {
         let input = "1abc2\npqr3stu8vwx\na1b2c3d4e5f\ntreb7uchet";
-        assert_eq!(solve(&input), 142);
+        assert_eq!(solve_part1(&input), 142);
     }
 }

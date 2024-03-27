@@ -34,7 +34,7 @@ const N_RED: u32 = 12;
 const N_GREEN: u32 = 13;
 const N_BLUE: u32 = 14;
 
-fn solve(games: &Vec<Game>) -> u32 {
+fn solve_part1(games: &Vec<Game>) -> u32 {
     let mut total = 0;
     for (id, sets) in games {
         let mut possible = true;
@@ -51,10 +51,10 @@ fn solve(games: &Vec<Game>) -> u32 {
 }
 
 fn main() {
-    let input = include_str!("../../input");
+    let input = include_str!("../input");
     let games = parse_input(input);
 
-    println!("{}", solve(&games));
+    println!("Part 1: {}", solve_part1(&games));
 }
 
 #[cfg(test)]
@@ -86,8 +86,8 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green";
     }
 
     #[test]
-    fn test_solve() {
+    fn test_solve_part1() {
         let games = example_games!();
-        assert_eq!(solve(&games), 8);
+        assert_eq!(solve_part1(&games), 8);
     }
 }
