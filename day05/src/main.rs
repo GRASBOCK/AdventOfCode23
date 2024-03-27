@@ -48,7 +48,7 @@ fn solve_part1(almanac: &Almanac) -> u64 {
         for (j, category) in almanac.1.iter().enumerate() {
             vals[j+1] = category_map(&category, vals[j])
         }
-        println!("Seed {}, soil {}, fertilizer {}, water {}, light {}, temperature {}, humidity {}, location {}", vals[0], vals[1], vals[2], vals[3], vals[4], vals[5], vals[6], vals[7]);      
+        //println!("Seed {}, soil {}, fertilizer {}, water {}, light {}, temperature {}, humidity {}, location {}", vals[0], vals[1], vals[2], vals[3], vals[4], vals[5], vals[6], vals[7]);      
     }
     results.iter().map(|vals| vals[7]).min().unwrap()
 }
