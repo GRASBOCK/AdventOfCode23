@@ -1,12 +1,12 @@
 use regex::Regex;
 
-type Scratchcard = (u32, Vec<u32>, Vec<u32>);
+type Scratchcard = (usize, Vec<u32>, Vec<u32>);
 
 fn parse_input(input: &str) -> Vec<Scratchcard> {
     fn parse_line(line: &str) -> Scratchcard {
         let re = Regex::new(r"Card\s*(?<id>\d*):").unwrap();
         let caps = re.captures(line).unwrap();
-        let id = caps["id"].parse::<u32>().unwrap();
+        let id = caps["id"].parse::<usize>().unwrap();
 
         let after_colon = line.split(":").skip(1).next().expect("Nothing after \":\"");
         let mut iterator = after_colon.split("|");
@@ -39,11 +39,34 @@ fn solve_part1(scratchcards: &Vec<Scratchcard>) -> u32 {
     total
 }
 
+fn solve_part2(scratchcards: &Vec<Scratchcard>) -> usize {
+    let mut scratchcard_copies: Vec<usize> = vec![0; scratchcards.len()];
+    let last_id = scratchcards.last().unwrap().0;
+    for (id, winning, have) in scratchcards {
+        let wins = winning.iter().fold(0, |acc, w| {
+            if have.iter().find(|&h| h == w).is_some(){
+                return acc + 1
+            }
+            acc
+        });
+        for offset in 0..wins{
+            let copy_id = id + offset + 1;
+            scratchcard_copies[copy_id - 1] += 1+scratchcard_copies[id - 1];
+            
+            if last_id == copy_id{
+                break;
+            }
+        }
+    }
+    scratchcard_copies.iter().sum::<usize>() + scratchcards.len()
+}
+
 fn main() {
     let input = include_str!("../input");
     let games = parse_input(input);
 
     println!("Part 1: {}", solve_part1(&games));
+    println!("Part 2: {}", solve_part2(&games));
 }
 
 #[cfg(test)]
@@ -81,5 +104,11 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11";
     fn test_solve_part1() {
         let scratchcards = example_scratchcards!();
         assert_eq!(solve_part1(&scratchcards), 13);
+    }
+
+    #[test]
+    fn test_solve_part2() {
+        let scratchcards = example_scratchcards!();
+        assert_eq!(solve_part2(&scratchcards), 30);
     }
 }
