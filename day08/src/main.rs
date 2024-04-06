@@ -43,8 +43,20 @@ fn parse_input(input: &str) -> Map {
     }
 }
 
-fn solve_part1(map: &Map) -> u64 {
-    todo!()
+fn solve_part1(map: &Map) -> usize {
+    let start = "AAA";
+    let goal = "ZZZ";
+    let mut steps = 0;
+    let mut node = start;
+    while node != goal{
+        let index = steps % map.instructions.len();
+        node = match map.instructions[index]{
+            Instruction::Left => map.nodes[node].0,
+            Instruction::Right => map.nodes[node].1
+        };
+        steps += 1;
+    }
+    steps
 }
 
 fn main() {
