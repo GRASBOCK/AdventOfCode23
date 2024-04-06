@@ -50,11 +50,21 @@ fn solve_part1(games: &Vec<Game>) -> u32 {
     total
 }
 
+fn solve_part2(games: &Vec<Game>) -> u32 {
+    games.iter().map(|(_, sets)|{
+        let red_max = sets.iter().map(|(red, _, _)| red).max().unwrap();
+        let green_max = sets.iter().map(|(_, green, _)| green).max().unwrap();
+        let blue_max = sets.iter().map(|(_, _, blue)| blue).max().unwrap();
+        red_max*green_max*blue_max
+    }).fold(0, |acc, x| acc + x)
+}
+
 fn main() {
     let input = include_str!("../input");
     let games = parse_input(input);
 
     println!("Part 1: {}", solve_part1(&games));
+    println!("Part 2: {}", solve_part2(&games));
 }
 
 #[cfg(test)]
@@ -89,5 +99,11 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green";
     fn test_solve_part1() {
         let games = example_games!();
         assert_eq!(solve_part1(&games), 8);
+    }
+
+    #[test]
+    fn test_solve_part2() {
+        let games = example_games!();
+        assert_eq!(solve_part2(&games), 2286);
     }
 }
