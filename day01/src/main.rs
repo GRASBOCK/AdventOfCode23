@@ -35,19 +35,23 @@ fn first_digit_word(line: &str) -> Option<(usize, u8)>{
 }
 
 fn last_digit_word(line: &str) -> Option<(usize, u8)>{
-    let mut d = None;
-    for (i, word) in WORD_DIGITS.iter().enumerate(){
-        let val = i + 1;
-        if let Some(index) = line.find(word){
-            if d.is_none(){
-                d = Some((index, val as u8));
-            }else if index > d.unwrap().0{
-                d = Some((index, val as u8));
+    let find_next_word = |offset: usize| -> Option<(usize, u8)>{
+        for (i, word) in WORD_DIGITS.iter().enumerate(){
+            let val = i + 1;
+            let res = line[offset..].find(word);
+            if let Some(index) = res{
+                return Some((index+offset, val as u8))
             }
         }
+        return None
+    };
+    let mut word = None;
+    let mut next_index = 0;
+    while let Some((i, val)) = find_next_word(next_index){
+        word = Some((i, val));
+        next_index = i+1;
     }
-    
-    return d
+    return word
 }
 
 fn solve_part1(input: &str) -> u32{
@@ -122,6 +126,9 @@ xtwone3four
 zoneight234
 7pqrstsixteen";
 
+    const EXAMPLE_3: &'static str = "tzgrvrkgbs7cfzf2eight76eight
+";
+
     #[test]
     fn test_first_digit() {
         let mut lines = EXAMPLE_1.lines();
@@ -174,6 +181,9 @@ zoneight234
         assert_eq!(first_digit_word(lines.next().unwrap()), Some((1, 9)));
         assert_eq!(first_digit_word(lines.next().unwrap()), Some((1, 1)));
         assert_eq!(first_digit_word(lines.next().unwrap()), Some((6, 6)));
+
+        let mut lines = EXAMPLE_3.lines();
+        assert_eq!(first_digit_word(lines.next().unwrap()), Some((16, 8)));
     }
 
     #[test]
@@ -192,6 +202,9 @@ zoneight234
         assert_eq!(last_digit_word(lines.next().unwrap()), Some((10, 7)));
         assert_eq!(last_digit_word(lines.next().unwrap()), Some((3, 8)));
         assert_eq!(last_digit_word(lines.next().unwrap()), Some((6, 6)));
+
+        let mut lines = EXAMPLE_3.lines();
+        assert_eq!(last_digit_word(lines.next().unwrap()), Some((23, 8)));
     }
 
     #[test]
