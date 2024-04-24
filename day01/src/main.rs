@@ -1,16 +1,16 @@
-fn first_digit(line: &str) -> u32{
-    for ch in line.chars(){
+fn first_digit(line: &str) -> (usize, u8){
+    for (i, ch) in line.bytes().enumerate(){
         if ch.is_ascii_digit(){
-            return ch.to_digit(10).unwrap()
+            return (i, ch - 48)
         }
     }
     panic!("No digits in line {}", line)
 }
 
-fn last_digit(line: &str) -> u32{
-    for ch in line.chars().rev(){
+fn last_digit(line: &str) -> (usize, u8){
+    for (i, ch) in line.bytes().enumerate().rev(){
         if ch.is_ascii_digit(){
-            return ch.to_digit(10).unwrap()
+            return (i, ch - 48)
         }
     }
     panic!("No digits in line {}", line)
@@ -19,7 +19,7 @@ fn last_digit(line: &str) -> u32{
 fn solve_part1(input: &str) -> u32{
     let mut total = 0u32; 
     for line in input.lines(){
-        total += first_digit(line)*10 + last_digit(line);
+        total += (first_digit(line).1*10 + last_digit(line).1) as u32;
     }
     return total;
 }
@@ -36,13 +36,13 @@ mod tests {
     #[test]
     fn test_first_digit() {
         let line = "uf61ab72c2efg";
-        assert_eq!(first_digit(&line), 6);
+        assert_eq!(first_digit(&line), (2, 6));
     }
 
     #[test]
     fn test_last_digit() {
         let line = "apf1ab58c2feh";
-        assert_eq!(last_digit(&line), 2);
+        assert_eq!(last_digit(&line), (9, 2));
     }
 
     #[test]
