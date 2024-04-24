@@ -1,110 +1,112 @@
-fn first_digit(line: &str) -> Option<(usize, u8)>{
-    for (i, ch) in line.bytes().enumerate(){
-        if ch.is_ascii_digit(){
-            return Some((i, ch - 48))
+fn first_digit(line: &str) -> Option<(usize, u8)> {
+    for (i, ch) in line.bytes().enumerate() {
+        if ch.is_ascii_digit() {
+            return Some((i, ch - 48));
         }
     }
     None
 }
 
-fn last_digit(line: &str) -> Option<(usize, u8)>{
-    for (i, ch) in line.bytes().enumerate().rev(){
-        if ch.is_ascii_digit(){
-            return Some((i, ch - 48))
+fn last_digit(line: &str) -> Option<(usize, u8)> {
+    for (i, ch) in line.bytes().enumerate().rev() {
+        if ch.is_ascii_digit() {
+            return Some((i, ch - 48));
         }
     }
     None
 }
 
-const WORD_DIGITS: [&'static str; 9] = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+const WORD_DIGITS: [&'static str; 9] = [
+    "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+];
 
-fn first_digit_word(line: &str) -> Option<(usize, u8)>{
+fn first_digit_word(line: &str) -> Option<(usize, u8)> {
     let mut d = None;
-    for (i, word) in WORD_DIGITS.iter().enumerate(){
+    for (i, word) in WORD_DIGITS.iter().enumerate() {
         let val = i + 1;
-        if let Some(index) = line.find(word){
-            if d.is_none(){
+        if let Some(index) = line.find(word) {
+            if d.is_none() {
                 d = Some((index, val as u8));
-            }else if index < d.unwrap().0{
+            } else if index < d.unwrap().0 {
                 d = Some((index, val as u8));
             }
         }
     }
-    
-    return d
+
+    return d;
 }
 
-fn last_digit_word(line: &str) -> Option<(usize, u8)>{
-    let find_next_word = |offset: usize| -> Option<(usize, u8)>{
-        for (i, word) in WORD_DIGITS.iter().enumerate(){
+fn last_digit_word(line: &str) -> Option<(usize, u8)> {
+    let find_next_word = |offset: usize| -> Option<(usize, u8)> {
+        for (i, word) in WORD_DIGITS.iter().enumerate() {
             let val = i + 1;
             let res = line[offset..].find(word);
-            if let Some(index) = res{
-                return Some((index+offset, val as u8))
+            if let Some(index) = res {
+                return Some((index + offset, val as u8));
             }
         }
-        return None
+        return None;
     };
     let mut word = None;
     let mut next_index = 0;
-    while let Some((i, val)) = find_next_word(next_index){
+    while let Some((i, val)) = find_next_word(next_index) {
         word = Some((i, val));
-        next_index = i+1;
+        next_index = i + 1;
     }
-    return word
+    return word;
 }
 
-fn solve_part1(input: &str) -> u32{
-    let mut total = 0u32; 
-    for line in input.lines(){
-        total += (first_digit(line).unwrap().1*10 + last_digit(line).unwrap().1) as u32;
+fn solve_part1(input: &str) -> u32 {
+    let mut total = 0u32;
+    for line in input.lines() {
+        total += (first_digit(line).unwrap().1 * 10 + last_digit(line).unwrap().1) as u32;
     }
     return total;
 }
 
-fn solve_part2(input: &str) -> u32{
-    let mut total = 0u32; 
-    for line in input.lines(){
+fn solve_part2(input: &str) -> u32 {
+    let mut total = 0u32;
+    for line in input.lines() {
         let fd = {
             let d = first_digit(line);
             let w = first_digit_word(line);
-            if let Some((wi, wv)) = w{
-                if let Some((di, dv)) = d{
-                    if wi < di{
+            if let Some((wi, wv)) = w {
+                if let Some((di, dv)) = d {
+                    if wi < di {
                         wv
-                    }else{
+                    } else {
                         dv
                     }
-                }else{
+                } else {
                     wv
                 }
-            }else{
+            } else {
                 d.unwrap().1
             }
         };
         let ld = {
             let d = last_digit(line);
             let w = last_digit_word(line);
-            if let Some((wi, wv)) = w{
-                if let Some((di, dv)) = d{
-                    if wi > di{
+            if let Some((wi, wv)) = w {
+                if let Some((di, dv)) = d {
+                    if wi > di {
                         wv
-                    }else{
+                    } else {
                         dv
                     }
-                }else{
+                } else {
                     wv
                 }
-            }else{
+            } else {
                 d.unwrap().1
             }
         };
-        total += (fd*10 + ld) as u32;
+        total += (fd * 10 + ld) as u32;
     }
     return total;
 }
 
-fn main(){
+fn main() {
     let input = include_str!("../input");
     println!("Part 1: {}", solve_part1(&input));
     println!("Part 2: {}", solve_part2(&input));
