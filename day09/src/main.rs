@@ -43,6 +43,13 @@ fn sequences(history: &[SensorValue]) -> Vec<Vec<SensorValue>> {
     }
     let last_index = sequences.len() - 1;
     sequences[last_index].push(0);
+    sequences[last_index].push(0);
+    for i in (0..sequences.len() - 1).rev() {
+        let delta = sequences[i + 1][0];
+        let current_value = sequences[i][0];
+        let extrapolated_backwards = current_value - delta;
+        sequences[i].insert(0, extrapolated_backwards);
+    }
     for i in (0..sequences.len() - 1).rev() {
         let delta = sequences[i + 1].last().unwrap();
         let current_value = sequences[i].last().unwrap();
@@ -60,11 +67,20 @@ fn solve_part1(input: &PuzzleInput) -> SensorValue {
         .sum()
 }
 
+fn solve_part2(input: &PuzzleInput) -> SensorValue {
+    input
+        .histories
+        .iter()
+        .map(|hist| sequences(hist)[0][0])
+        .sum()
+}
+
 fn main() {
     let input = include_str!("../input");
     let input = parse_input(input);
 
     println!("Part 1: {}", solve_part1(&input));
+    println!("Part 2: {}", solve_part2(&input));
 }
 
 #[cfg(test)]
@@ -100,28 +116,28 @@ mod tests {
         assert_eq!(
             sequences(&input.histories[0]),
             vec![
-                vec![0, 3, 6, 9, 12, 15, 18],
-                vec![3, 3, 3, 3, 3, 3],
-                vec![0, 0, 0, 0, 0],
+                vec![-3, 0, 3, 6, 9, 12, 15, 18],
+                vec![3, 3, 3, 3, 3, 3, 3],
+                vec![0, 0, 0, 0, 0, 0],
             ]
         );
         assert_eq!(
             sequences(&input.histories[1]),
             vec![
-                vec![1, 3, 6, 10, 15, 21, 28],
-                vec![2, 3, 4, 5, 6, 7],
-                vec![1, 1, 1, 1, 1],
-                vec![0, 0, 0, 0],
+                vec![0, 1, 3, 6, 10, 15, 21, 28],
+                vec![1, 2, 3, 4, 5, 6, 7],
+                vec![1, 1, 1, 1, 1, 1],
+                vec![0, 0, 0, 0, 0],
             ]
         );
         assert_eq!(
             sequences(&input.histories[2]),
             vec![
-                vec![10, 13, 16, 21, 30, 45, 68],
-                vec![3, 3, 5, 9, 15, 23],
-                vec![0, 2, 4, 6, 8],
-                vec![2, 2, 2, 2],
-                vec![0, 0, 0],
+                vec![5, 10, 13, 16, 21, 30, 45, 68],
+                vec![5, 3, 3, 5, 9, 15, 23],
+                vec![-2, 0, 2, 4, 6, 8],
+                vec![2, 2, 2, 2, 2],
+                vec![0, 0, 0, 0],
             ]
         );
     }
