@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 type Coordinate = (i64, i64);
 
 #[derive(PartialEq, Debug)]
@@ -20,9 +18,61 @@ fn parse_input(input: &str) -> PuzzleInput {
     PuzzleInput { observations }
 }
 
+fn expand(observations: &Vec<Coordinate>) -> Vec<Coordinate>{
+    let empty = |ax: &dyn Fn(&Coordinate) -> i64| -> Vec<i64>{
+        let max = observations.iter().map(ax).max().unwrap();
+        let mut empty = vec![];
+        for c in 0..max as usize{
+            let mut is_empty = true;
+            for o in observations.iter(){
+                if c as i64 == ax(o){
+                    is_empty = false;
+                    break
+                }
+            }
+            if is_empty{
+                empty.push(c as i64);
+            }
+        }
+        empty
+    };
+    let empty_columns = empty(&|(x, _)|{ *x});
+    let empty_rows = empty(&|(_, y)|{ *y});
+
+    let mut expanded = observations.clone();
+    for (i, o) in observations.iter().enumerate(){
+        for x in empty_columns.iter(){
+            if o.0 > *x{
+                expanded[i].0 += 1;
+            }else {
+                break;
+            }
+        }
+        for y in empty_rows.iter(){
+            if o.1 > *y{
+                expanded[i].1 += 1;
+            }else {
+                break;
+            }
+        }
+    }
+    expanded
+}
+
+fn distance(a: &Coordinate, b: &Coordinate) -> usize{
+    ((a.0-b.0).abs() + (a.1-b.1).abs()) as usize
+}
+
 
 fn solve_part1(input: &PuzzleInput) -> usize {
-    10
+    let expanded: Vec<Coordinate> = expand(&input.observations);
+    let mut sum = 0;
+    for (i, icoord) in expanded.iter().enumerate(){
+        for jcoord in expanded[i+1..].iter(){
+            sum += distance(icoord, jcoord);
+        }
+    }
+    sum
 }
 
 fn solve_part2(input: &PuzzleInput) -> usize {
@@ -68,6 +118,20 @@ mod tests {
     fn test_parsing() {
         let input = example_parsed!();
         assert_eq!(parse_input(&EXAMPLE), input);
+    }
+
+    #[test]
+    fn test_distance() {
+        assert_eq!(distance(&(1, 5), &(4, 9)), 7);
+        assert_eq!(distance(&(4, 9), &(1, 5)), 7);
+    }
+
+    #[test]
+    fn test_expansion() {
+        let input = example_parsed!();
+        assert_eq!(expand(&input.observations), vec![
+            (4, 0), (9, 1), (0, 2), (8, 5), (1, 6), (12, 7), (9, 10), (0, 11), (5, 11)
+        ]);
     }
 
     #[test]
