@@ -18,7 +18,7 @@ fn parse_input(input: &str) -> PuzzleInput {
     PuzzleInput { observations }
 }
 
-fn expand(observations: &Vec<Coordinate>) -> Vec<Coordinate>{
+fn expand(observations: &Vec<Coordinate>, factor: i64) -> Vec<Coordinate>{
     let empty = |ax: &dyn Fn(&Coordinate) -> i64| -> Vec<i64>{
         let max = observations.iter().map(ax).max().unwrap();
         let mut empty = vec![];
@@ -43,14 +43,14 @@ fn expand(observations: &Vec<Coordinate>) -> Vec<Coordinate>{
     for (i, o) in observations.iter().enumerate(){
         for x in empty_columns.iter(){
             if o.0 > *x{
-                expanded[i].0 += 1;
+                expanded[i].0 += factor-1;
             }else {
                 break;
             }
         }
         for y in empty_rows.iter(){
             if o.1 > *y{
-                expanded[i].1 += 1;
+                expanded[i].1 += factor-1;
             }else {
                 break;
             }
@@ -63,9 +63,8 @@ fn distance(a: &Coordinate, b: &Coordinate) -> usize{
     ((a.0-b.0).abs() + (a.1-b.1).abs()) as usize
 }
 
-
-fn solve_part1(input: &PuzzleInput) -> usize {
-    let expanded: Vec<Coordinate> = expand(&input.observations);
+fn sum_expenaded_distances(input: &PuzzleInput, factor: i64) -> usize{
+    let expanded: Vec<Coordinate> = expand(&input.observations, factor);
     let mut sum = 0;
     for (i, icoord) in expanded.iter().enumerate(){
         for jcoord in expanded[i+1..].iter(){
@@ -75,8 +74,12 @@ fn solve_part1(input: &PuzzleInput) -> usize {
     sum
 }
 
+fn solve_part1(input: &PuzzleInput) -> usize {
+    sum_expenaded_distances(input, 2)
+}
+
 fn solve_part2(input: &PuzzleInput) -> usize {
-    0
+    sum_expenaded_distances(input, 1000000)
 }
 
 fn main() {
@@ -129,7 +132,7 @@ mod tests {
     #[test]
     fn test_expansion() {
         let input = example_parsed!();
-        assert_eq!(expand(&input.observations), vec![
+        assert_eq!(expand(&input.observations, 1), vec![
             (4, 0), (9, 1), (0, 2), (8, 5), (1, 6), (12, 7), (9, 10), (0, 11), (5, 11)
         ]);
     }
@@ -138,5 +141,12 @@ mod tests {
     fn test_solve_part1() {
         let input = example_parsed!();
         assert_eq!(solve_part1(&input), 374);
+    }
+
+    #[test]
+    fn test_solve_part2() {
+        let input = example_parsed!();
+        assert_eq!(sum_expenaded_distances(&input, 10), 1030);
+        assert_eq!(sum_expenaded_distances(&input, 100), 8410);
     }
 }
