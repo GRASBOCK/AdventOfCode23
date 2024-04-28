@@ -1,3 +1,5 @@
+use std::str;
+
 #[derive(PartialEq, Debug)]
 struct Row<'a> {
     springs: &'a str,
@@ -25,19 +27,29 @@ fn parse_input(input: &str) -> PuzzleInput {
     PuzzleInput { rows }
 }
 
-fn arrangements(springs: &[u8], groups: &[usize]) -> usize {
+fn arrangements(parent_springs: &[u8], offset: usize, groups: &[usize]) -> usize {
+    let mut springs = Vec::from(parent_springs);
     // gather matches
     let n = groups[0];
-    let check_next = |i: usize| -> usize {
+    //println!("{} {} {:?}", str::from_utf8(springs.as_slice()).unwrap(), offset, groups);
+    let check_next = |springs: &[u8], i: usize| -> usize {
         if groups.len() > 1 {
-            arrangements(&springs[i..], &groups[1..])
+            arrangements(springs, i, &groups[1..])
         } else {
+            println!("{} [DONE]", str::from_utf8(springs).unwrap());
             1
         }
     };
     let mut arr = 0;
-    let pattern_matches = |start: usize| -> Option<usize> {
+    let pattern_matches = |springs: &[u8], start: usize| -> Option<(Vec<u8>, usize)> {
+        let mut new_springs = Vec::from(springs);
         if start + n > springs.len() {
+            // not enough space for this group
+            return None;
+        }
+        let leftover_damaged = groups.len()-1 + groups.iter().sum::<usize>();
+        if leftover_damaged + start > springs.len() {
+            // not enough space for other groups
             return None;
         }
         // there is still space for the group
@@ -47,6 +59,8 @@ fn arrangements(springs: &[u8], groups: &[usize]) -> usize {
                 // the group finished
                 ok = false;
                 break;
+            }else{
+                new_springs[start + j] = b'#';
             }
         }
         if ok {
@@ -55,19 +69,26 @@ fn arrangements(springs: &[u8], groups: &[usize]) -> usize {
                 // it's not over yet. There need to be a '.' after the group
                 if springs[start + n] != b'#' {
                     // there is no '#' after the group
-                    return Some(start + n + 1);
+                    new_springs[start + n] = b'.';
+                    Some((new_springs, start + n + 1))
+                }else{
+                    // there is a '#' which means it's connecting with another group (bad)
+                    None
                 }
             } else {
-                return Some(start + n);
+                // it's at the end of the springs list. finished
+                Some((new_springs, start + n))
             }
+        }else{
+            // pattern doesn't match
+            None
         }
-        None
     };
-    for (i, c) in springs.iter().enumerate() {
+    for (i, c) in parent_springs.iter().enumerate().skip(offset) {
         match c {
             b'#' => {
-                if let Some(next_starting_index) = pattern_matches(i) {
-                    arr += check_next(next_starting_index);
+                if let Some((filled_springs, next_starting_index)) = pattern_matches(springs.as_slice(), i) {
+                    arr += check_next(filled_springs.as_slice(), next_starting_index);
                 }
                 break;
             }
@@ -75,9 +96,10 @@ fn arrangements(springs: &[u8], groups: &[usize]) -> usize {
                 continue;
             }
             b'?' => {
-                if let Some(next_starting_index) = pattern_matches(i) {
-                    arr += check_next(next_starting_index);
+                if let Some((filled_springs, next_starting_index)) = pattern_matches(springs.as_slice(), i) {
+                    arr += check_next(filled_springs.as_slice(), next_starting_index);
                 }
+                springs[i] = b'.';
             }
             _ => panic!("invalid character {c}"),
         }
@@ -89,7 +111,10 @@ fn solve_part1(input: &PuzzleInput) -> usize {
     input
         .rows
         .iter()
-        .map(|r| arrangements(r.springs.as_bytes(), &r.groups))
+        .map(|r| {
+            println!("{} {:?}", str::from_utf8(r.springs.as_bytes()).unwrap(), &r.groups);
+            arrangements(r.springs.as_bytes(), 0, &r.groups)
+        })
         .sum()
 }
 
@@ -115,6 +140,8 @@ mod tests {
 ????.#...#... 4,1,1
 ????.######..#####. 1,6,5
 ?###???????? 3,2,1
+.?????...? 1,1,1
+#????????.#?#?????? 2,1,1,5,1
 ";
 
     macro_rules! example_parsed {
@@ -145,6 +172,14 @@ mod tests {
                         springs: "?###????????",
                         groups: vec![3, 2, 1],
                     },
+                    Row {
+                        springs: ".?????...?",
+                        groups: vec![1,1,1],
+                    },
+                    Row {
+                        springs: "#????????.#?#??????",
+                        groups: vec![2,1,1,5,1],
+                    },
                 ],
             }
         };
@@ -159,13 +194,15 @@ mod tests {
     #[test]
     fn test_arrangements() {
         let input = example_parsed!();
-        let arr = |i: usize| arrangements(&input.rows[i].springs.as_bytes(), &input.rows[i].groups);
+        let arr = |i: usize| arrangements(&input.rows[i].springs.as_bytes(),0, &input.rows[i].groups);
         assert_eq!(arr(0), 1);
         assert_eq!(arr(1), 4);
         assert_eq!(arr(2), 1);
         assert_eq!(arr(3), 1);
         assert_eq!(arr(4), 4);
         assert_eq!(arr(5), 10);
+        assert_eq!(arr(6), 7);
+        assert_eq!(arr(7), 36);
     }
 
     #[test]
