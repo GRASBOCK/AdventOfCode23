@@ -2,6 +2,7 @@ use std::str;
 
 #[derive(PartialEq, Debug)]
 struct Pattern {
+    // assumes, that rows and columns are all smaller than 64 characters long
     rows: Vec<u64>,
     columns: Vec<u64>,
 }
@@ -51,15 +52,42 @@ fn detect_reflection(columns: &Vec<u64>) -> Option<usize>{
     None
 }
 
+fn pattern_number(p: &Pattern) -> usize{
+    if let Some(hi) = detect_reflection(&p.rows){
+        hi*100
+    }else if let Some(vi) = detect_reflection(&p.columns){
+        vi
+    }else{
+        0
+    }
+}
+
 fn solve_part1(input: &PuzzleInput) -> usize {
-    input.patterns.iter().map(|p|{
-        if let Some(hi) = detect_reflection(&p.rows){
-            hi*100
-        }else if let Some(vi) = detect_reflection(&p.columns){
-            vi
-        }else{
-            0
+    input.patterns.iter().map(pattern_number).sum()
+}
+
+fn solve_part2(input: &PuzzleInput) -> usize {
+    input.patterns.iter().enumerate().map(|(i, p)|{
+        println!("p: {}", i);
+        let original = pattern_number(p);
+        // crazy inefficient solution
+        // try out every possibility
+        for ri in 0..p.rows.len(){
+            for ci in 0..p.columns.len(){
+                let mut rows = p.rows.clone();
+                let mut columns = p.columns.clone();
+                rows[ri] = rows[ri] ^ (1u64 << (p.columns.len()-1 - ci));
+                columns[ci] = columns[ci] ^ (1u64 << ri);
+                println!("p row: {:#020b}", p.rows[ri]);
+                println!("n row: {:#020b}\n", rows[ri]);
+                let num = pattern_number(&Pattern { rows, columns });
+                if num != 0 && num != original{
+                    println!("Found");
+                    return num
+                }
+            }
         }
+        panic!("No reflections after removing smudges");
     }).sum()
 }
 
@@ -68,6 +96,7 @@ fn main() {
     let input = parse_input(input);
 
     println!("Part 1: {}", solve_part1(&input));
+    println!("Part 2: {}", solve_part2(&input));
 }
 
 #[cfg(test)]
@@ -89,7 +118,17 @@ mod tests {
 #####.##.
 #####.##.
 ..##..###
-#....#..#";
+#....#..#
+
+#.##....##.#.
+#.##....##.#.
+.#.#....#.#.#
+.###....###..
+#.#.####.#.#.
+.####...###.#
+#..######..#.
+..#..##..#..#
+.#........#.#";
 
     macro_rules! example_parsed {
         () => {
@@ -139,6 +178,34 @@ mod tests {
                             0b1100111,
                         ],
                     },
+                    Pattern{
+                        rows: vec![
+                            0b1011000011010,
+                            0b1011000011010,
+                            0b0101000010101,
+                            0b0111000011100,
+                            0b1010111101010,
+                            0b0111100011101,
+                            0b1001111110010,
+                            0b0010011001001,
+                            0b0100000000101,
+                        ],
+                        columns: vec![
+                            0b001010011,
+                            0b100101100,
+                            0b010111011,
+                            0b001101111,
+                            0b001110000,
+                            0b011010000,
+                            0b011010000,
+                            0b001010000,
+                            0b001101111,
+                            0b010111011,
+                            0b100101100,
+                            0b001010011,
+                            0b110100100,
+                        ]
+                    }
                 ],
             }
         };
@@ -165,5 +232,11 @@ mod tests {
     fn test_solve_part1() {
         let input = example_parsed!();
         assert_eq!(solve_part1(&input), 405);
+    }
+
+    #[test]
+    fn test_solve_part2() {
+        let input = example_parsed!();
+        assert_eq!(solve_part2(&input), 400);
     }
 }
