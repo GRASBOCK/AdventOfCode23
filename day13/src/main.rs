@@ -38,12 +38,29 @@ fn parse_input(input: &str) -> PuzzleInput {
     PuzzleInput { patterns }
 }
 
-fn solve_part1(input: &PuzzleInput) -> usize {
-    unimplemented!()
+fn detect_reflection(columns: &Vec<u64>) -> Option<usize>{
+    let n = columns.len();
+    for i in 1..n{
+        let size = std::cmp::min(i, n-i);
+        let before = columns[i-size..i].iter().rev();
+        let after = columns[i..i+size].iter();
+        if before.eq(after){
+            return Some(i)
+        }
+    }
+    None
 }
 
-fn solve_part2(input: &PuzzleInput) -> usize {
-    unimplemented!()
+fn solve_part1(input: &PuzzleInput) -> usize {
+    input.patterns.iter().map(|p|{
+        if let Some(hi) = detect_reflection(&p.rows){
+            hi*100
+        }else if let Some(vi) = detect_reflection(&p.columns){
+            vi
+        }else{
+            0
+        }
+    }).sum()
 }
 
 fn main() {
@@ -51,7 +68,6 @@ fn main() {
     let input = parse_input(input);
 
     println!("Part 1: {}", solve_part1(&input));
-    println!("Part 2: {}", solve_part2(&input));
 }
 
 #[cfg(test)]
@@ -135,14 +151,19 @@ mod tests {
     }
 
     #[test]
-    fn test_solve_part1() {
+    fn test_reflection_detection() {
         let input = example_parsed!();
-        assert_eq!(solve_part1(&input), 21);
+        // horizontal
+        assert_eq!(detect_reflection(&input.patterns[0].rows), None);
+        assert_eq!(detect_reflection(&input.patterns[1].rows), Some(4));
+        //vertical
+        assert_eq!(detect_reflection(&input.patterns[0].columns), Some(5));
+        assert_eq!(detect_reflection(&input.patterns[1].columns), None);
     }
 
     #[test]
-    fn test_solve_part2() {
+    fn test_solve_part1() {
         let input = example_parsed!();
-        assert_eq!(solve_part2(&input), 24);
+        assert_eq!(solve_part1(&input), 405);
     }
 }
