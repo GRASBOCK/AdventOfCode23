@@ -15,18 +15,17 @@ struct PuzzleInput {
 fn parse_pattern(pattern_str: &str) -> Pattern {
     let mut rows = vec![];
     let width = pattern_str.find('\n').unwrap();
-    let mut columns = vec![0; width]; 
-    for (i, line) in pattern_str.lines().enumerate(){
-
+    let mut columns = vec![0; width];
+    for (i, line) in pattern_str.lines().enumerate() {
         let mut row = 0u64;
-        for (j, c) in line.bytes().rev().enumerate(){
-            if c == b'#'{
+        for (j, c) in line.bytes().rev().enumerate() {
+            if c == b'#' {
                 row = row | (1u64 << j);
             }
         }
         rows.push(row);
-        for (j, c) in line.bytes().enumerate(){
-            if c == b'#'{
+        for (j, c) in line.bytes().enumerate() {
+            if c == b'#' {
                 columns[j] = columns[j] | (1u64 << i);
             }
         }
@@ -39,28 +38,28 @@ fn parse_input(input: &str) -> PuzzleInput {
     PuzzleInput { patterns }
 }
 
-fn detect_reflection(columns: &Vec<u64>) -> Vec<usize>{
+fn detect_reflection(columns: &Vec<u64>) -> Vec<usize> {
     let n = columns.len();
     let mut reflections = vec![];
-    for i in 1..n{
-        let size = std::cmp::min(i, n-i);
-        let before = columns[i-size..i].iter().rev();
-        let after = columns[i..i+size].iter();
-        if before.eq(after){
+    for i in 1..n {
+        let size = std::cmp::min(i, n - i);
+        let before = columns[i - size..i].iter().rev();
+        let after = columns[i..i + size].iter();
+        if before.eq(after) {
             reflections.push(i);
         }
     }
     reflections
 }
 
-fn pattern_number(p: &Pattern) -> usize{
+fn pattern_number(p: &Pattern) -> usize {
     let horizontals = detect_reflection(&p.rows);
     let verticals = detect_reflection(&p.columns);
-    if !horizontals.is_empty(){
-        horizontals[0]*100
-    }else if !verticals.is_empty(){
+    if !horizontals.is_empty() {
+        horizontals[0] * 100
+    } else if !verticals.is_empty() {
         verticals[0]
-    }else{
+    } else {
         0
     }
 }
@@ -70,32 +69,41 @@ fn solve_part1(input: &PuzzleInput) -> usize {
 }
 
 fn solve_part2(input: &PuzzleInput) -> usize {
-    input.patterns.iter().enumerate().map(|(i, p)|{
-        let original = pattern_number(p);
-        // crazy inefficient solution
-        // try out every possibility
-        for ri in 0..p.rows.len(){
-            for ci in 0..p.columns.len(){
-                let mut rows = p.rows.clone();
-                let mut columns = p.columns.clone();
-                rows[ri] = rows[ri] ^ (1u64 << (p.columns.len()-1 - ci));
-                columns[ci] = columns[ci] ^ (1u64 << ri);
-               
-                let nums: Vec<usize> = {
-                    let verticals = detect_reflection(&columns);
-                    let horizontals = detect_reflection(&rows);
-                    horizontals.iter().map(|hi| hi*100).chain(verticals.iter().map(|vi|*vi)).collect()
-                };
-                let nums: Vec<&usize> = nums.iter().filter(|&a| *a != original && *a != 0).collect();
-                assert!(nums.len() < 2);
-                
-                if nums.len() == 1{
-                    return *nums[0]
+    input
+        .patterns
+        .iter()
+        .map(|p| {
+            let original = pattern_number(p);
+            // crazy inefficient solution
+            // try out every possibility
+            for ri in 0..p.rows.len() {
+                for ci in 0..p.columns.len() {
+                    let mut rows = p.rows.clone();
+                    let mut columns = p.columns.clone();
+                    rows[ri] = rows[ri] ^ (1u64 << (p.columns.len() - 1 - ci));
+                    columns[ci] = columns[ci] ^ (1u64 << ri);
+
+                    let nums: Vec<usize> = {
+                        let verticals = detect_reflection(&columns);
+                        let horizontals = detect_reflection(&rows);
+                        horizontals
+                            .iter()
+                            .map(|hi| hi * 100)
+                            .chain(verticals.iter().map(|vi| *vi))
+                            .collect()
+                    };
+                    let nums: Vec<&usize> =
+                        nums.iter().filter(|&a| *a != original && *a != 0).collect();
+                    assert!(nums.len() < 2);
+
+                    if nums.len() == 1 {
+                        return *nums[0];
+                    }
                 }
             }
-        }
-        panic!("No reflections after removing smudges");
-    }).sum()
+            panic!("No reflections after removing smudges");
+        })
+        .sum()
 }
 
 fn main() {
@@ -112,8 +120,7 @@ mod tests {
 
     use super::*;
 
-    const EXAMPLE: &'static str = 
-"#.##..##.
+    const EXAMPLE: &'static str = "#.##..##.
 ..#.##.#.
 ##......#
 ##......#
@@ -139,8 +146,7 @@ mod tests {
 ..#..##..#..#
 .#........#.#";
 
-const EXAMPLE2: &'static str = 
-"#.##....##.#.
+    const EXAMPLE2: &'static str = "#.##....##.#.
 #.##....##.#.
 .#.#....#.#.#
 .###....###..
@@ -164,7 +170,7 @@ const EXAMPLE2: &'static str =
         () => {
             PuzzleInput {
                 patterns: vec![
-                    Pattern{
+                    Pattern {
                         rows: vec![
                             0b101100110,
                             0b001011010,
@@ -175,18 +181,11 @@ const EXAMPLE2: &'static str =
                             0b101011010,
                         ],
                         columns: vec![
-                            0b1001101,
-                            0b0001100,
-                            0b1110011,
-                            0b0100001,
-                            0b1010010,
-                            0b1010010,
-                            0b0100001,
-                            0b1110011,
-                            0b0001100,
+                            0b1001101, 0b0001100, 0b1110011, 0b0100001, 0b1010010, 0b1010010,
+                            0b0100001, 0b1110011, 0b0001100,
                         ],
                     },
-                    Pattern{
+                    Pattern {
                         rows: vec![
                             0b100011001,
                             0b100001001,
@@ -197,18 +196,11 @@ const EXAMPLE2: &'static str =
                             0b100001001,
                         ],
                         columns: vec![
-                            0b1011011,
-                            0b0011000,
-                            0b0111100,
-                            0b0111100,
-                            0b0011001,
-                            0b1000011,
-                            0b0111100,
-                            0b0111100,
-                            0b1100111,
+                            0b1011011, 0b0011000, 0b0111100, 0b0111100, 0b0011001, 0b1000011,
+                            0b0111100, 0b0111100, 0b1100111,
                         ],
                     },
-                    Pattern{
+                    Pattern {
                         rows: vec![
                             0b1011000011010,
                             0b1011000011010,
@@ -234,8 +226,8 @@ const EXAMPLE2: &'static str =
                             0b100101100,
                             0b001010011,
                             0b110100100,
-                        ]
-                    }
+                        ],
+                    },
                 ],
             }
         };
@@ -267,7 +259,7 @@ const EXAMPLE2: &'static str =
     }
 
     #[test]
-    fn test_special_case(){
+    fn test_special_case() {
         let input = parse_input(&EXAMPLE2);
         assert_eq!(detect_reflection(&input.patterns[0].rows), vec![1]);
         assert_eq!(detect_reflection(&input.patterns[0].columns), vec![6]);
