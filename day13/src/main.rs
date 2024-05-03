@@ -39,24 +39,27 @@ fn parse_input(input: &str) -> PuzzleInput {
     PuzzleInput { patterns }
 }
 
-fn detect_reflection(columns: &Vec<u64>) -> Option<usize>{
+fn detect_reflection(columns: &Vec<u64>) -> Vec<usize>{
     let n = columns.len();
+    let mut reflections = vec![];
     for i in 1..n{
         let size = std::cmp::min(i, n-i);
         let before = columns[i-size..i].iter().rev();
         let after = columns[i..i+size].iter();
         if before.eq(after){
-            return Some(i)
+            reflections.push(i);
         }
     }
-    None
+    reflections
 }
 
 fn pattern_number(p: &Pattern) -> usize{
-    if let Some(hi) = detect_reflection(&p.rows){
-        hi*100
-    }else if let Some(vi) = detect_reflection(&p.columns){
-        vi
+    let horizontals = detect_reflection(&p.rows);
+    let verticals = detect_reflection(&p.columns);
+    if !horizontals.is_empty(){
+        horizontals[0]*100
+    }else if !verticals.is_empty(){
+        verticals[0]
     }else{
         0
     }
@@ -68,7 +71,6 @@ fn solve_part1(input: &PuzzleInput) -> usize {
 
 fn solve_part2(input: &PuzzleInput) -> usize {
     input.patterns.iter().enumerate().map(|(i, p)|{
-        println!("p: {}", i);
         let original = pattern_number(p);
         // crazy inefficient solution
         // try out every possibility
@@ -78,12 +80,17 @@ fn solve_part2(input: &PuzzleInput) -> usize {
                 let mut columns = p.columns.clone();
                 rows[ri] = rows[ri] ^ (1u64 << (p.columns.len()-1 - ci));
                 columns[ci] = columns[ci] ^ (1u64 << ri);
-                println!("p row: {:#020b}", p.rows[ri]);
-                println!("n row: {:#020b}\n", rows[ri]);
-                let num = pattern_number(&Pattern { rows, columns });
-                if num != 0 && num != original{
-                    println!("Found");
-                    return num
+               
+                let nums: Vec<usize> = {
+                    let verticals = detect_reflection(&columns);
+                    let horizontals = detect_reflection(&rows);
+                    horizontals.iter().map(|hi| hi*100).chain(verticals.iter().map(|vi|*vi)).collect()
+                };
+                let nums: Vec<&usize> = nums.iter().filter(|&a| *a != original && *a != 0).collect();
+                assert!(nums.len() < 2);
+                
+                if nums.len() == 1{
+                    return *nums[0]
                 }
             }
         }
@@ -101,6 +108,8 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    use std::vec;
+
     use super::*;
 
     const EXAMPLE: &'static str = 
@@ -129,6 +138,27 @@ mod tests {
 #..######..#.
 ..#..##..#..#
 .#........#.#";
+
+const EXAMPLE2: &'static str = 
+"#.##....##.#.
+#.##....##.#.
+.#.#....#.#.#
+.###....###..
+#.#.####.#.#.
+.###....###.#
+#..######..#.
+..#..##..#..#
+.#........#.#
+
+.####.#.##.#.
+#....###..###
+#.##.#.#..#.#
+......#....#.
+.#..#........
+.####.#.##.#.
+......##..##.
+.......#..#..
+.#..#..####..";
 
     macro_rules! example_parsed {
         () => {
@@ -221,19 +251,29 @@ mod tests {
     fn test_reflection_detection() {
         let input = example_parsed!();
         // horizontal
-        assert_eq!(detect_reflection(&input.patterns[0].rows), None);
-        assert_eq!(detect_reflection(&input.patterns[1].rows), Some(4));
-        assert_eq!(detect_reflection(&input.patterns[2].rows), Some(1));
+        assert_eq!(detect_reflection(&input.patterns[0].rows), vec![]);
+        assert_eq!(detect_reflection(&input.patterns[1].rows), vec![4]);
+        assert_eq!(detect_reflection(&input.patterns[2].rows), vec![1]);
         //vertical
-        assert_eq!(detect_reflection(&input.patterns[0].columns), Some(5));
-        assert_eq!(detect_reflection(&input.patterns[1].columns), None);
-        assert_eq!(detect_reflection(&input.patterns[2].columns), None);
+        assert_eq!(detect_reflection(&input.patterns[0].columns), vec![5]);
+        assert_eq!(detect_reflection(&input.patterns[1].columns), vec![]);
+        assert_eq!(detect_reflection(&input.patterns[2].columns), vec![]);
     }
 
     #[test]
     fn test_solve_part1() {
         let input = example_parsed!();
         assert_eq!(solve_part1(&input), 505);
+    }
+
+    #[test]
+    fn test_special_case(){
+        let input = parse_input(&EXAMPLE2);
+        assert_eq!(detect_reflection(&input.patterns[0].rows), vec![1]);
+        assert_eq!(detect_reflection(&input.patterns[0].columns), vec![6]);
+
+        assert_eq!(detect_reflection(&input.patterns[1].rows), vec![]);
+        assert_eq!(detect_reflection(&input.patterns[1].columns), vec![3, 9]);
     }
 
     #[test]
