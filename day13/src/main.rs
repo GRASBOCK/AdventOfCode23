@@ -223,20 +223,22 @@ mod tests {
         // horizontal
         assert_eq!(detect_reflection(&input.patterns[0].rows), None);
         assert_eq!(detect_reflection(&input.patterns[1].rows), Some(4));
+        assert_eq!(detect_reflection(&input.patterns[2].rows), Some(1));
         //vertical
         assert_eq!(detect_reflection(&input.patterns[0].columns), Some(5));
         assert_eq!(detect_reflection(&input.patterns[1].columns), None);
+        assert_eq!(detect_reflection(&input.patterns[2].columns), None);
     }
 
     #[test]
     fn test_solve_part1() {
         let input = example_parsed!();
-        assert_eq!(solve_part1(&input), 405);
+        assert_eq!(solve_part1(&input), 505);
     }
 
     #[test]
     fn test_solve_part2() {
         let input = example_parsed!();
-        assert_eq!(solve_part2(&input), 400);
+        assert_eq!(solve_part2(&input), 406);
     }
 }
