@@ -39,9 +39,9 @@ impl Platform {
     }
     fn index2coord(&self, index: usize) -> Option<(i32, i32)> {
         if index >= self.width * self.height {
-            return None;
+            None
         } else {
-            return Some(((index % self.width) as i32, (index / self.width) as i32));
+            Some(((index % self.width) as i32, (index / self.width) as i32))
         }
     }
 }
@@ -54,7 +54,7 @@ impl fmt::Display for Platform {
                 let t = &self.tiles[index];
                 write!(f, "{}", t)?;
             }
-            write!(f, "\n")?;
+            writeln!(f)?;
         }
         Ok(())
     }
@@ -180,12 +180,8 @@ fn platform_load(platform: &Platform, direction: Direction) -> usize {
         let mut cursor = origin;
         let mut load = 1;
         while let Some(i) = platform.coord2index(cursor) {
-            //dbg!(cursor, i);
-            match platform.tiles[i] {
-                O => {
-                    total_load += load;
-                }
-                _ => (),
+            if platform.tiles[i] == O {
+                total_load += load;
             }
             cursor = next(cursor);
             load += 1;
