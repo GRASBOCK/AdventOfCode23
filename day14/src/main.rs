@@ -1,5 +1,5 @@
 use std::{
-    collections::{BTreeMap, HashSet},
+    collections::{BTreeMap},
     fmt, str,
 };
 
@@ -199,11 +199,11 @@ fn solve_part1(platform: &Platform) -> usize {
 }
 
 fn cycle(platform: &Platform) -> Platform {
-    let platform = tilt_platform(&platform, Direction::North);
+    let platform = tilt_platform(platform, Direction::North);
     let platform = tilt_platform(&platform, Direction::West);
     let platform = tilt_platform(&platform, Direction::South);
-    let platform = tilt_platform(&platform, Direction::East);
-    platform
+    
+    tilt_platform(&platform, Direction::East)
 }
 
 fn solve_part2(platform: &Platform) -> usize {
