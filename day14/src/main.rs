@@ -104,13 +104,13 @@ fn tilt_platform(platform: &Platform, direction: Direction) -> Platform {
         }
         Direction::West => {
             let origins: Vec<(i32, i32)> = (0..platform.height).map(|y| (0, y as i32)).collect();
-            (origins, (-1, 0))
+            (origins, (1, 0))
         }
         Direction::East => {
             let origins: Vec<(i32, i32)> = (0..platform.height)
                 .map(|y| (platform.width as i32 - 1, y as i32))
                 .collect();
-            (origins, (1, 0))
+            (origins, (-1, 0))
         }
     };
     let next = |p: (i32, i32)| (p.0 + offset.0, p.1 + offset.1);
@@ -195,8 +195,31 @@ fn solve_part1(platform: &Platform) -> usize {
     platform_load(&tilted, Direction::North)
 }
 
-fn solve_part2(_platform: &Platform) -> usize {
-    10
+fn cycle(platform: &Platform) -> Platform{
+    let platform = tilt_platform(&platform, Direction::North);
+    let platform = tilt_platform(&platform, Direction::West);
+    let platform = tilt_platform(&platform, Direction::South);
+    let platform = tilt_platform(&platform, Direction::East);
+    platform
+}
+
+fn solve_part2(platform: &Platform) -> usize {
+    let mut last_cycle_platform = platform.clone();
+    for i in 0..1000000000{
+        let platform = cycle(&last_cycle_platform);
+        if last_cycle_platform == platform{
+            last_cycle_platform = platform;
+            println!("Finished after {i} cycles");
+            break;
+        }else{
+            if i % 1000 == 0{
+                let load = platform_load(&last_cycle_platform, Direction::North);
+                println!("c: {i}; load: {load}");
+            }
+            last_cycle_platform = platform;
+        }
+    }
+    platform_load(&last_cycle_platform, Direction::North)
 }
 
 fn main() {
@@ -222,6 +245,39 @@ O.#..O.#.#
 .......O..
 #....###..
 #OO..#....";
+
+    const EXAMPLE_1_CYCLE: &str = ".....#....
+....#...O#
+...OO##...
+.OO#......
+.....OOO#.
+.O#...O#.#
+....O#....
+......OOOO
+#...O###..
+#..OO#....";
+
+const EXAMPLE_2_CYCLE: &str = ".....#....
+....#...O#
+.....##...
+..O#......
+.....OOO#.
+.O#...O#.#
+....O#...O
+.......OOO
+#..OO###..
+#.OOO#...O";
+
+const EXAMPLE_3_CYCLE: &str = ".....#....
+....#...O#
+.....##...
+..O#......
+.....OOO#.
+.O#...O#.#
+....O#...O
+.......OOO
+#...O###.O
+#.OOO#...O";
 
     macro_rules! example_parsed {
         () => {
@@ -258,6 +314,32 @@ O.#..O.#.#
             height: 10,
         };
         assert_eq!(tilt_platform(&platform, Direction::North), platform_tilted);
+    }
+
+    #[test]
+    fn test_cycles() {
+        let platform = example_parsed!();
+        let platform = cycle(&platform);
+        assert_eq!(parse_input(EXAMPLE_1_CYCLE), platform, "cycle 1 doesnt match");
+        let platform = cycle(&platform);
+        assert_eq!(parse_input(EXAMPLE_2_CYCLE), platform, "cycle 2 doesnt match");
+        let platform = cycle(&platform);
+        assert_eq!(parse_input(EXAMPLE_3_CYCLE), platform, "cycle 3 doesnt match");
+        
+        assert_eq!(platform_load(&platform, Direction::North), 64)
+    }
+
+    #[test]
+    fn test_many_cycles() {
+        let platform = example_parsed!();
+        let platform = cycle(&platform);
+        assert_eq!(parse_input(EXAMPLE_1_CYCLE), platform, "cycle 1 doesnt match");
+        let platform = cycle(&platform);
+        assert_eq!(parse_input(EXAMPLE_2_CYCLE), platform, "cycle 2 doesnt match");
+        let platform = cycle(&platform);
+        assert_eq!(parse_input(EXAMPLE_3_CYCLE), platform, "cycle 3 doesnt match");
+        
+        assert_eq!(platform_load(&platform, Direction::North), 64)
     }
 
     #[test]
