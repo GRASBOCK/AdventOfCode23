@@ -1,6 +1,9 @@
-use std::{fmt, str};
+use std::{
+    collections::{BTreeMap, HashSet},
+    fmt, str,
+};
 
-#[derive(PartialEq, Debug, Clone)]
+#[derive(PartialEq, Debug, Clone, PartialOrd, Eq, Ord)]
 enum Tile {
     O,
     C,
@@ -195,7 +198,7 @@ fn solve_part1(platform: &Platform) -> usize {
     platform_load(&tilted, Direction::North)
 }
 
-fn cycle(platform: &Platform) -> Platform{
+fn cycle(platform: &Platform) -> Platform {
     let platform = tilt_platform(&platform, Direction::North);
     let platform = tilt_platform(&platform, Direction::West);
     let platform = tilt_platform(&platform, Direction::South);
@@ -205,19 +208,40 @@ fn cycle(platform: &Platform) -> Platform{
 
 fn solve_part2(platform: &Platform) -> usize {
     let mut last_cycle_platform = platform.clone();
-    for i in 0..1000000000{
-        let platform = cycle(&last_cycle_platform);
-        if last_cycle_platform == platform{
-            last_cycle_platform = platform;
-            println!("Finished after {i} cycles");
-            break;
-        }else{
-            if i % 1000 == 0{
-                let load = platform_load(&last_cycle_platform, Direction::North);
-                println!("c: {i}; load: {load}");
+    let mut store: BTreeMap<Box<[Tile]>, Box<[Tile]>> = BTreeMap::new();
+    let n = 1000000000;
+    let mut i = 0;
+    while i < n {
+        let stored_platform = store.get(&last_cycle_platform.tiles);
+        let platform = if let Some(previous) = stored_platform {
+            // it repeats!
+            let mut j = 1;
+            let mut tiles = previous;
+            while tiles != &last_cycle_platform.tiles {
+                tiles = store.get(tiles).unwrap();
+                j += 1;
             }
+            println!("Repeates after {j} cycles");
+            let iterations_to_skip = (n - i) / j * j;
+            i += iterations_to_skip;
+            Platform {
+                tiles: previous.clone(),
+                width: last_cycle_platform.width,
+                height: last_cycle_platform.height,
+            }
+        } else {
+            let p = cycle(&last_cycle_platform);
+            store.insert(last_cycle_platform.tiles.clone(), p.tiles.clone());
+            p
+        };
+
+        if last_cycle_platform == platform {
+            last_cycle_platform = platform;
+            break;
+        } else {
             last_cycle_platform = platform;
         }
+        i += 1;
     }
     platform_load(&last_cycle_platform, Direction::North)
 }
@@ -257,7 +281,7 @@ O.#..O.#.#
 #...O###..
 #..OO#....";
 
-const EXAMPLE_2_CYCLE: &str = ".....#....
+    const EXAMPLE_2_CYCLE: &str = ".....#....
 ....#...O#
 .....##...
 ..O#......
@@ -268,7 +292,7 @@ const EXAMPLE_2_CYCLE: &str = ".....#....
 #..OO###..
 #.OOO#...O";
 
-const EXAMPLE_3_CYCLE: &str = ".....#....
+    const EXAMPLE_3_CYCLE: &str = ".....#....
 ....#...O#
 .....##...
 ..O#......
@@ -320,11 +344,23 @@ const EXAMPLE_3_CYCLE: &str = ".....#....
     fn test_cycles() {
         let platform = example_parsed!();
         let platform = cycle(&platform);
-        assert_eq!(parse_input(EXAMPLE_1_CYCLE), platform, "cycle 1 doesnt match");
+        assert_eq!(
+            parse_input(EXAMPLE_1_CYCLE),
+            platform,
+            "cycle 1 doesnt match"
+        );
         let platform = cycle(&platform);
-        assert_eq!(parse_input(EXAMPLE_2_CYCLE), platform, "cycle 2 doesnt match");
+        assert_eq!(
+            parse_input(EXAMPLE_2_CYCLE),
+            platform,
+            "cycle 2 doesnt match"
+        );
         let platform = cycle(&platform);
-        assert_eq!(parse_input(EXAMPLE_3_CYCLE), platform, "cycle 3 doesnt match");
+        assert_eq!(
+            parse_input(EXAMPLE_3_CYCLE),
+            platform,
+            "cycle 3 doesnt match"
+        );
     }
 
     #[test]
