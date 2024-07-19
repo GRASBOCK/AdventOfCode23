@@ -325,21 +325,6 @@ const EXAMPLE_3_CYCLE: &str = ".....#....
         assert_eq!(parse_input(EXAMPLE_2_CYCLE), platform, "cycle 2 doesnt match");
         let platform = cycle(&platform);
         assert_eq!(parse_input(EXAMPLE_3_CYCLE), platform, "cycle 3 doesnt match");
-        
-        assert_eq!(platform_load(&platform, Direction::North), 64)
-    }
-
-    #[test]
-    fn test_many_cycles() {
-        let platform = example_parsed!();
-        let platform = cycle(&platform);
-        assert_eq!(parse_input(EXAMPLE_1_CYCLE), platform, "cycle 1 doesnt match");
-        let platform = cycle(&platform);
-        assert_eq!(parse_input(EXAMPLE_2_CYCLE), platform, "cycle 2 doesnt match");
-        let platform = cycle(&platform);
-        assert_eq!(parse_input(EXAMPLE_3_CYCLE), platform, "cycle 3 doesnt match");
-        
-        assert_eq!(platform_load(&platform, Direction::North), 64)
     }
 
     #[test]
@@ -351,6 +336,6 @@ const EXAMPLE_3_CYCLE: &str = ".....#....
     #[test]
     fn test_solve_part2() {
         let input = example_parsed!();
-        assert_eq!(solve_part2(&input), 0);
+        assert_eq!(solve_part2(&input), 64);
     }
 }
