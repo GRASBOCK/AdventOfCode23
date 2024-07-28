@@ -27,15 +27,15 @@ impl fmt::Display for Tile {
 use Tile::*;
 
 #[derive(PartialEq, Debug, Clone)]
-struct PuzzleInput {
+struct Grid {
     tiles: Box<[Tile]>,
     width: usize,
     height: usize,
 }
 
-type Platform = PuzzleInput;
+type PuzzleInput = Grid;
 
-impl Platform {
+impl Grid {
     fn coord2index(&self, p: (i32, i32)) -> Option<usize> {
         if p.0 < 0 || p.1 < 0 || p.0 as usize >= self.width || p.1 as usize >= self.height {
             None
@@ -52,7 +52,7 @@ impl Platform {
     }
 }
 
-impl fmt::Display for Platform {
+impl fmt::Display for Grid {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for y in 0..self.height {
             for x in 0..self.width {
@@ -98,20 +98,20 @@ fn parse_input(input: &str) -> PuzzleInput {
 }
 
 
-fn solve_part1(platform: &Platform) -> usize {
+fn solve_part1(grid: &Grid) -> usize {
     0
 }
 
-fn solve_part2(platform: &Platform) -> usize {
+fn solve_part2(grid: &Grid) -> usize {
     0
 }
 
 fn main() {
     let input = include_str!("../input");
-    let platform = parse_input(input);
+    let inp = parse_input(input);
 
-    println!("Part 1: {}", solve_part1(&platform));
-    println!("Part 2: {}", solve_part2(&platform));
+    println!("Part 1: {}", solve_part1(&inp));
+    println!("Part 2: {}", solve_part2(&inp));
 }
 
 #[cfg(test)]
@@ -153,8 +153,8 @@ E,E,FSM,FSM,E,UDS,E,E,E,E,
 
     #[test]
     fn test_parsing() {
-        let platform = example_parsed!();
-        assert_eq!(parse_input(EXAMPLE), platform);
+        let inp = example_parsed!();
+        assert_eq!(parse_input(EXAMPLE), inp);
     }
 
     #[test]
