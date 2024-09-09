@@ -60,7 +60,7 @@ fn part_numbers(input: &str) -> Vec<u64> {
                 is_part_number = true;
             };
         } else {
-            if digits.len() > 0 && is_part_number {
+            if !digits.is_empty() && is_part_number {
                 let part_number_str: String = digits.iter().collect();
                 part_numbers.push(part_number_str.parse::<u64>().unwrap());
             }
@@ -137,7 +137,7 @@ fn solve_part2(input: &str) -> u64 {
             };
         } else {
             if let Some(gear_idx) = gear_index {
-                if digits.len() > 0 {
+                if !digits.is_empty() {
                     let part_number_str: String = digits.iter().collect();
                     let part_number = part_number_str.parse::<u64>().unwrap();
                     if let Some(part_numbers) = gears.get_mut(&gear_idx) {
@@ -176,7 +176,7 @@ fn main() {
 mod tests {
     use super::*;
 
-    const EXAMPLE: &'static str = "467..114..
+    const EXAMPLE: &str = "467..114..
 ...*......
 ..35..633.
 ......#...
