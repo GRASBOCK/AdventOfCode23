@@ -46,7 +46,7 @@ struct Color<T> {
 
 #[derive(PartialEq, Debug, Clone)]
 struct DigPlan {
-    instructions: Vec<((i32, i32), usize, [u8; 3])>,
+    instructions: Vec<((i32, i32), i32, [u8; 3])>,
 }
 
 type PuzzleInput = DigPlan;
@@ -64,7 +64,7 @@ fn parse_input(input: &str) -> PuzzleInput {
                 b'R' => R,
                 _ => panic!("Invalid character"),
             };
-            let steps = split.next().unwrap().to_string().parse::<usize>().unwrap();
+            let steps = split.next().unwrap().to_string().parse::<i32>().unwrap();
             let color_hex = &split.next().unwrap()[2..8];
             let color_boxxed: Box<[u8]> = (0..color_hex.len())
                 .step_by(2)
@@ -83,8 +83,92 @@ const D: (i32, i32) = (0, 1);
 const L: (i32, i32) = (-1, 0);
 const R: (i32, i32) = (1, 0);
 
+fn mul_vec(v: &(i32, i32), a: i32) -> (i32, i32) {
+    (v.0 * a, v.1 * a)
+}
+
+fn add_vec(v1: &(i32, i32), v2: &(i32, i32)) -> (i32, i32) {
+    (v1.0 + v2.0, v1.1 + v2.1)
+}
+
+fn sub_vec(v1: &(i32, i32), v2: &(i32, i32)) -> (i32, i32) {
+    (v1.0 - v2.0, v1.1 - v2.1)
+}
+
+fn dig_trench(digplan: &DigPlan) -> Vec<((i32, i32), &[u8; 3])> {
+    let mut trench_coords = Vec::new();
+    let mut pos = (0, 0);
+    for (dir, n, color) in digplan.instructions.iter() {
+        for _ in 0..*n {
+            pos = add_vec(&pos, dir);
+            trench_coords.push((pos, color));
+        }
+    }
+    trench_coords
+}
+
+fn flood_fill(mut grid: Grid<char>, coord: &(i32, i32)) -> Grid<char> {
+    let i = grid.coord2index(*coord);
+    if let Some(i) = i {
+        if grid.tiles[i] == b'#' as char {
+            return grid;
+        } else {
+            grid.tiles[i] = b'#' as char;
+            grid = flood_fill(grid, &add_vec(coord, &U));
+            grid = flood_fill(grid, &add_vec(coord, &D));
+            grid = flood_fill(grid, &add_vec(coord, &L));
+            grid = flood_fill(grid, &add_vec(coord, &R));
+        }
+    }
+    grid
+}
+
 fn solve_part1(input: &PuzzleInput) -> usize {
-    0
+    let trench_coords = dig_trench(&input);
+    let x_min = trench_coords.iter().map(|(pos, _)| pos.0).min().unwrap();
+    let x_max = trench_coords.iter().map(|(pos, _)| pos.0).max().unwrap();
+    let y_min = trench_coords.iter().map(|(pos, _)| pos.1).min().unwrap();
+    let y_max = trench_coords.iter().map(|(pos, _)| pos.1).max().unwrap();
+    let offset: (i32, i32) = (-x_min, -y_min);
+
+    let width = (x_max - x_min) as usize + 1;
+    let height = (y_max - y_min) as usize + 1;
+    let mut grid = Grid {
+        tiles: vec![b'.' as char; width * height].into_boxed_slice(),
+        width,
+        height,
+    };
+    for (coord, _) in trench_coords.iter() {
+        let grid_coord = add_vec(coord, &offset);
+        let idx = grid.coord2index(grid_coord).unwrap();
+        grid.tiles[idx] = b'#' as char;
+    }
+    //println!("{grid}");
+    // find point that is inside by coming from the outside
+
+    let find_inside = || {
+        for y in 1..grid.height - 1 {
+            let mut trench_touched = false;
+            for x in 1..grid.width - 1 {
+                let coord = (x as i32, y as i32);
+                let idx = grid.coord2index(coord).unwrap();
+                if grid.tiles[idx] == b'#' as char {
+                    trench_touched = true;
+                } else if trench_touched {
+                    return coord;
+                }
+            }
+        }
+        panic!("nothing inside");
+    };
+    let start = find_inside();
+    let filled_grid = flood_fill(grid, &start);
+    println!("{filled_grid}");
+    filled_grid
+        .tiles
+        .iter()
+        .filter(|&&t| t == b'#' as char)
+        .count()
 }
 
 fn solve_part2(_input: &PuzzleInput) -> usize {
