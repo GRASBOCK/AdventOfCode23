@@ -1,27 +1,26 @@
 type Coord = [i32; 3];
 
-#[derive(PartialEq, Debug, Clone)]
-struct Brick {
-    start: Coord,
-    end: Coord
-}
+type Brick = [Coord; 2];
 
 type PuzzleInput = Box<[Brick]>;
 
 fn parse_input(input: &str) -> PuzzleInput {
-    input.lines().map(|line|{
-        let mut it = line.split('~');
-        fn to_coord(s: &str) -> Coord{
-            let mut it = s.split(',');
-            let x = it.next().unwrap().parse::<i32>().unwrap();
-            let y = it.next().unwrap().parse::<i32>().unwrap();
-            let z = it.next().unwrap().parse::<i32>().unwrap();
-            [x, y, z]
-        }
-        let start = to_coord(it.next().unwrap());
-        let end = to_coord(it.next().unwrap());
-        Brick { start, end }
-    }).collect()
+    input
+        .lines()
+        .map(|line| {
+            let mut it = line.split('~');
+            fn to_coord(s: &str) -> Coord {
+                let mut it = s.split(',');
+                let x = it.next().unwrap().parse::<i32>().unwrap();
+                let y = it.next().unwrap().parse::<i32>().unwrap();
+                let z = it.next().unwrap().parse::<i32>().unwrap();
+                [x, y, z]
+            }
+            let start = to_coord(it.next().unwrap());
+            let end = to_coord(it.next().unwrap());
+            [start, end]
+        })
+        .collect()
 }
 
 fn solve_part1(input: &PuzzleInput) -> usize {
@@ -57,13 +56,13 @@ mod tests {
     macro_rules! example_parsed {
         () => {
             [
-                Brick{start: [1,0,1], end: [1,2,1]},
-                Brick{start: [0,0,2], end: [2,0,2]},
-                Brick{start: [0,2,3], end: [2,2,3]},
-                Brick{start: [0,0,4], end: [0,2,4]},
-                Brick{start: [2,0,5], end: [2,2,5]},
-                Brick{start: [0,1,6], end: [2,1,6]},
-                Brick{start: [1,1,8], end: [1,1,9]},
+                [[1, 0, 1], [1, 2, 1]],
+                [[0, 0, 2], [2, 0, 2]],
+                [[0, 2, 3], [2, 2, 3]],
+                [[0, 0, 4], [0, 2, 4]],
+                [[2, 0, 5], [2, 2, 5]],
+                [[0, 1, 6], [2, 1, 6]],
+                [[1, 1, 8], [1, 1, 9]],
             ]
         };
     }
