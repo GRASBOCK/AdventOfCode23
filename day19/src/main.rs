@@ -17,11 +17,11 @@ struct Condition<'a> {
     next: &'a str,
 }
 
-impl <'a> Condition<'a>{
-    fn is_true(&self, part: &Part) -> bool{
-        if self.less{
+impl<'a> Condition<'a> {
+    fn is_true(&self, part: &Part) -> bool {
+        if self.less {
             part[self.idx] < self.number
-        }else{
+        } else {
             part[self.idx] > self.number
         }
     }
@@ -99,32 +99,36 @@ fn parse_input(input: &str) -> PuzzleInput {
     PuzzleInput { workflows, parts }
 }
 
-fn apply_workflow(input: &PuzzleInput, wf: &Workflow, part: &Part) -> bool{
-    for cond in wf.conditions.iter(){
-        if cond.is_true(part){
-            match cond.next{
+fn apply_workflow(input: &PuzzleInput, wf: &Workflow, part: &Part) -> bool {
+    for cond in wf.conditions.iter() {
+        if cond.is_true(part) {
+            match cond.next {
                 "R" => return false,
                 "A" => return true,
-                _ => return apply_workflow(input, input.workflows.get(cond.next).unwrap(), part)
+                _ => return apply_workflow(input, input.workflows.get(cond.next).unwrap(), part),
             }
         }
     }
-    match wf.next{
+    match wf.next {
         "R" => return false,
         "A" => return true,
-        _ => return apply_workflow(input, input.workflows.get(wf.next).unwrap(), part)
+        _ => return apply_workflow(input, input.workflows.get(wf.next).unwrap(), part),
     }
 }
 
 fn solve_part1(input: &PuzzleInput) -> usize {
     let starting_wf = input.workflows.get("in").unwrap();
-    input.parts.iter().filter_map(|&part|{
-        if apply_workflow(input, starting_wf, &part){
-            Some(part.iter().sum::<usize>())
-        }else{
-            None
-        }
-    }).sum()
+    input
+        .parts
+        .iter()
+        .filter_map(|&part| {
+            if apply_workflow(input, starting_wf, &part) {
+                Some(part.iter().sum::<usize>())
+            } else {
+                None
+            }
+        })
+        .sum()
 }
 
 fn solve_part2(_input: &PuzzleInput) -> usize {
@@ -171,9 +175,33 @@ hdj{m>838:A,pv}
 
     #[test]
     fn test_parsing_condition() {
-        assert_eq!(parse_condition("a<2006:qkq"), Condition{idx: 2, less: true, number: 2006, next: "qkq"});
-        assert_eq!(parse_condition("s<537:gd"), Condition{idx: 3, less: true, number: 537, next: "gd"});
-        assert_eq!(parse_condition("m>1548:A"), Condition{idx: 1, less: false, number: 1548, next: "A"});
+        assert_eq!(
+            parse_condition("a<2006:qkq"),
+            Condition {
+                idx: 2,
+                less: true,
+                number: 2006,
+                next: "qkq"
+            }
+        );
+        assert_eq!(
+            parse_condition("s<537:gd"),
+            Condition {
+                idx: 3,
+                less: true,
+                number: 537,
+                next: "gd"
+            }
+        );
+        assert_eq!(
+            parse_condition("m>1548:A"),
+            Condition {
+                idx: 1,
+                less: false,
+                number: 1548,
+                next: "A"
+            }
+        );
     }
 
     #[test]
