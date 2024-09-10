@@ -17,10 +17,22 @@ struct Condition<'a> {
     next: &'a str,
 }
 
+impl <'a> Condition<'a>{
+    fn is_true(&self, part: &Part) -> bool{
+        if self.less{
+            part[self.idx] < self.number
+        }else{
+            part[self.idx] > self.number
+        }
+    }
+}
+
+type Part = [usize; 4];
+
 #[derive(PartialEq, Debug, Clone)]
 struct PuzzleInput<'a> {
     workflows: BTreeMap<&'a str, Workflow<'a>>,
-    parts: Vec<[usize; 4]>,
+    parts: Vec<Part>,
 }
 
 fn parse_condition<'a>(text: &'a str) -> Condition<'a> {
@@ -48,7 +60,7 @@ fn parse_condition<'a>(text: &'a str) -> Condition<'a> {
     }
 }
 
-fn parse_part(line: &str) -> [usize; 4] {
+fn parse_part(line: &str) -> Part {
     let trimmed: String = line.replace(['x', 'a', 'm', 's', '{', '}', '=', '\n', ','], " ");
     let numbers_vec: Vec<usize> = trimmed
         .split_whitespace()
@@ -87,8 +99,32 @@ fn parse_input(input: &str) -> PuzzleInput {
     PuzzleInput { workflows, parts }
 }
 
+fn apply_workflow(input: &PuzzleInput, wf: &Workflow, part: &Part) -> bool{
+    for cond in wf.conditions.iter(){
+        if cond.is_true(part){
+            match cond.next{
+                "R" => return false,
+                "A" => return true,
+                _ => return apply_workflow(input, input.workflows.get(cond.next).unwrap(), part)
+            }
+        }
+    }
+    match wf.next{
+        "R" => return false,
+        "A" => return true,
+        _ => return apply_workflow(input, input.workflows.get(wf.next).unwrap(), part)
+    }
+}
+
 fn solve_part1(input: &PuzzleInput) -> usize {
-    0
+    let starting_wf = input.workflows.get("in").unwrap();
+    input.parts.iter().filter_map(|&part|{
+        if apply_workflow(input, starting_wf, &part){
+            Some(part.iter().sum::<usize>())
+        }else{
+            None
+        }
+    }).sum()
 }
 
 fn solve_part2(_input: &PuzzleInput) -> usize {
@@ -149,7 +185,7 @@ hdj{m>838:A,pv}
     #[test]
     fn test_solve_part1() {
         let input = parse_input(EXAMPLE);
-        assert_eq!(solve_part1(&input), 62);
+        assert_eq!(solve_part1(&input), 19114);
     }
 
     #[test]
