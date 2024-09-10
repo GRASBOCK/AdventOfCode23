@@ -1,6 +1,5 @@
 use std::{
     collections::BTreeMap,
-    fmt::{self, Display},
 };
 
 #[derive(PartialEq, Debug, Clone)]
@@ -35,7 +34,7 @@ struct PuzzleInput<'a> {
     parts: Vec<Part>,
 }
 
-fn parse_condition<'a>(text: &'a str) -> Condition<'a> {
+fn parse_condition(text: &str) -> Condition<'_> {
     let mut it = text.split(&['<', '>', ':']);
     let idx = match it.next().unwrap() {
         "x" => 0,
@@ -67,7 +66,7 @@ fn parse_part(line: &str) -> Part {
         .map(|n| {
             n.to_string()
                 .parse::<usize>()
-                .expect(format!("failed to parse '{n}'").as_str())
+                .unwrap_or_else(|_| panic!("failed to parse '{n}'"))
         })
         .collect();
     let mut numbers = [0usize; 4];
@@ -82,15 +81,15 @@ fn parse_input(input: &str) -> PuzzleInput {
         .unwrap()
         .lines()
         .map(|line| {
-            let mut sections = line.split("{");
+            let mut sections = line.split('{');
             let name = sections.next().unwrap();
             let rules_string = sections.next().unwrap();
             let rules_string = &rules_string[0..rules_string.len() - 1]; // without last character
-            let rules: Vec<&str> = rules_string.split(",").collect();
+            let rules: Vec<&str> = rules_string.split(',').collect();
             let next = rules[rules.len() - 1];
             let conditions = rules[0..rules.len() - 1]
                 .iter()
-                .map(|s| parse_condition(*s))
+                .map(|s| parse_condition(s))
                 .collect();
             (name, Workflow { conditions, next })
         })
@@ -110,8 +109,8 @@ fn apply_workflow(input: &PuzzleInput, wf: &Workflow, part: &Part) -> bool {
         }
     }
     match wf.next {
-        "R" => return false,
-        "A" => return true,
+        "R" => false,
+        "A" => true,
         _ => return apply_workflow(input, input.workflows.get(wf.next).unwrap(), part),
     }
 }
