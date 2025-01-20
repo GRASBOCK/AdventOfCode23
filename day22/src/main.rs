@@ -59,7 +59,7 @@ fn supporting_bricks_in_layer(layer: &Vec<([i32; 2], usize)>, coords_to_check: &
             return None;
         })
         .collect();
-    // todo: remove duplictaes
+    // remove duplictaes
     indices.sort();
     return indices.iter().fold(Vec::<usize>::new(), |mut acc, &x|{
         if acc.iter().find(|&&a| a == x).is_none(){
