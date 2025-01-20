@@ -47,6 +47,28 @@ fn brick_layer_projected(dim: &Dimensions) -> Vec<[i32; 2]> {
     return vec![[dim[0][0], dim[0][1]]];
 }
 
+fn supporting_bricks_in_layer(layer: &Vec<([i32; 2], usize)>, coords_to_check: &Vec<[i32; 2]>) -> Vec<usize>{
+    let mut indices: Vec<usize> = layer
+        .iter()
+        .filter_map(|(bc, brick_idx)| {
+            for c in coords_to_check.iter() {
+                if c == bc {
+                    return Some(*brick_idx);
+                }
+            }
+            return None;
+        })
+        .collect();
+    // todo: remove duplictaes
+    indices.sort();
+    return indices.iter().fold(Vec::<usize>::new(), |mut acc, &x|{
+        if acc.iter().find(|&&a| a == x).is_none(){
+            acc.push(x);
+        }
+        return acc;
+    });
+}
+
 #[derive(Clone)]
 struct SettledBrick {
     supported_by: Vec<usize>,
@@ -81,19 +103,7 @@ fn settle_bricks(input: &PuzzleInput) -> (Tower, Graph) {
         // for each layer
         let mut resting_layer_idx = 0;
         for (layer_idx, bricks) in tower.iter().enumerate().rev() {
-            let supporting_bricks: Vec<usize> = bricks
-                .iter()
-                .filter_map(|(c, brick_idx)| {
-                    for bc in base.iter() {
-                        if c == bc {
-                            return Some(*brick_idx);
-                        } else {
-                            return None;
-                        }
-                    }
-                    panic!("the base is empty")
-                })
-                .collect();
+            let supporting_bricks: Vec<usize> = supporting_bricks_in_layer(bricks, &base);
             if !supporting_bricks.is_empty() {
                 break;
             } else {
@@ -221,6 +231,20 @@ mod tests {
         for i in 0..input.len(){
             assert_eq!(brick_layer_projected(&input[i]), projections[i]);
         }        
+    }
+
+    #[test]
+    fn test_supporting_bricks_in_layer() {
+        let layer = vec![([1, 0], 0), ([1, 1], 0), ([1, 2], 0)];
+        assert_eq!(supporting_bricks_in_layer(&layer, &vec![[0, 0]]), vec![]);
+        assert_eq!(supporting_bricks_in_layer(&layer, &vec![[1, 0]]), vec![0]); 
+        assert_eq!(supporting_bricks_in_layer(&layer, &vec![[1, 1]]), vec![0]);
+        let layer = vec![([0, 0], 0), ([1, 0], 0), ([2, 0], 1)];
+        assert_eq!(supporting_bricks_in_layer(&layer, &vec![[0, 0]]), vec![0]);
+        assert_eq!(supporting_bricks_in_layer(&layer, &vec![[1, 0]]), vec![0]); 
+        assert_eq!(supporting_bricks_in_layer(&layer, &vec![[2, 0]]), vec![1]);
+        assert_eq!(supporting_bricks_in_layer(&layer, &vec![[1, 0], [2, 0]]), vec![0, 1]);
+        assert_eq!(supporting_bricks_in_layer(&layer, &vec![[1, 0], [2, 0], [0, 0]]), vec![0, 1]); 
     }
 
     #[test]
