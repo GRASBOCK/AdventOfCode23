@@ -1,4 +1,3 @@
-use std::{cmp::Ordering, collections::BTreeMap};
 
 type Coord = [i32; 3];
 
@@ -44,7 +43,7 @@ fn brick_layer_projected(dim: &Dimensions) -> Vec<[i32; 2]> {
         };
         return (0..y_length).map(|y| [dim[0][0], y + y_min]).collect();
     }
-    return vec![[dim[0][0], dim[0][1]]];
+    vec![[dim[0][0], dim[0][1]]]
 }
 
 fn supporting_bricks_in_layer(layer: &Vec<([i32; 2], usize)>, coords_to_check: &Vec<[i32; 2]>) -> Vec<usize>{
@@ -56,17 +55,17 @@ fn supporting_bricks_in_layer(layer: &Vec<([i32; 2], usize)>, coords_to_check: &
                     return Some(*brick_idx);
                 }
             }
-            return None;
+            None
         })
         .collect();
     // remove duplictaes
     indices.sort();
-    return indices.iter().fold(Vec::<usize>::new(), |mut acc, &x|{
-        if acc.iter().find(|&&a| a == x).is_none(){
+    indices.iter().fold(Vec::<usize>::new(), |mut acc, &x|{
+        if !acc.iter().any(|&a| a == x){
             acc.push(x);
         }
-        return acc;
-    });
+        acc
+    })
 }
 
 #[derive(Clone)]
@@ -97,7 +96,7 @@ fn settle_bricks(input: &PuzzleInput) -> (Tower, Graph) {
         falling_brick_dimensions: &Dimensions,
     ) {
         let height =
-            (falling_brick_dimensions[1][2] - falling_brick_dimensions[0][2]).abs() as usize + 1;
+            (falling_brick_dimensions[1][2] - falling_brick_dimensions[0][2]).unsigned_abs() as usize + 1;
         // base coordinates of brick projected onto lowest z of brick
         let base: Vec<[i32; 2]> = brick_layer_projected(falling_brick_dimensions);
         // for each layer
