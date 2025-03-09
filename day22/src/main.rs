@@ -1,4 +1,3 @@
-
 type Coord = [i32; 3];
 
 type Dimensions = [Coord; 2];
@@ -25,7 +24,7 @@ fn parse_input(input: &str) -> PuzzleInput {
 }
 
 fn brick_layer_projected(dim: &Dimensions) -> Vec<[i32; 2]> {
-    let x_length = (dim[1][0] - dim[0][0]).abs()+ 1;
+    let x_length = (dim[1][0] - dim[0][0]).abs() + 1;
     if x_length > 1 {
         let x_min = if dim[1][0] > dim[0][0] {
             dim[0][0]
@@ -46,7 +45,10 @@ fn brick_layer_projected(dim: &Dimensions) -> Vec<[i32; 2]> {
     vec![[dim[0][0], dim[0][1]]]
 }
 
-fn supporting_bricks_in_layer(layer: &Vec<([i32; 2], usize)>, coords_to_check: &Vec<[i32; 2]>) -> Vec<usize>{
+fn supporting_bricks_in_layer(
+    layer: &Vec<([i32; 2], usize)>,
+    coords_to_check: &Vec<[i32; 2]>,
+) -> Vec<usize> {
     let mut indices: Vec<usize> = layer
         .iter()
         .filter_map(|(bc, brick_idx)| {
@@ -60,8 +62,8 @@ fn supporting_bricks_in_layer(layer: &Vec<([i32; 2], usize)>, coords_to_check: &
         .collect();
     // remove duplictaes
     indices.sort();
-    indices.iter().fold(Vec::<usize>::new(), |mut acc, &x|{
-        if !acc.iter().any(|&a| a == x){
+    indices.iter().fold(Vec::<usize>::new(), |mut acc, &x| {
+        if !acc.iter().any(|&a| a == x) {
             acc.push(x);
         }
         acc
@@ -95,8 +97,9 @@ fn settle_bricks(input: &PuzzleInput) -> (Tower, Graph) {
         falling_brick_idx: usize,
         falling_brick_dimensions: &Dimensions,
     ) {
-        let height =
-            (falling_brick_dimensions[1][2] - falling_brick_dimensions[0][2]).unsigned_abs() as usize + 1;
+        let height = (falling_brick_dimensions[1][2] - falling_brick_dimensions[0][2])
+            .unsigned_abs() as usize
+            + 1;
         // base coordinates of brick projected onto lowest z of brick
         let base: Vec<[i32; 2]> = brick_layer_projected(falling_brick_dimensions);
         // for each layer
@@ -185,7 +188,7 @@ mod tests {
                 vec![[0, 0], [0, 1], [0, 2]], // brick index: 3
                 vec![[2, 0], [2, 1], [2, 2]], // brick index: 4
                 vec![[0, 1], [1, 1], [2, 1]], // brick index: 5
-                vec![[1, 1]], // brick index: 6
+                vec![[1, 1]],                 // brick index: 6
             ]
         };
     }
@@ -227,23 +230,29 @@ mod tests {
     fn test_brick_projections() {
         let input = parse_input(EXAMPLE);
         let projections = example_projections!();
-        for i in 0..input.len(){
+        for i in 0..input.len() {
             assert_eq!(brick_layer_projected(&input[i]), projections[i]);
-        }        
+        }
     }
 
     #[test]
     fn test_supporting_bricks_in_layer() {
         let layer = vec![([1, 0], 0), ([1, 1], 0), ([1, 2], 0)];
         assert_eq!(supporting_bricks_in_layer(&layer, &vec![[0, 0]]), vec![]);
-        assert_eq!(supporting_bricks_in_layer(&layer, &vec![[1, 0]]), vec![0]); 
+        assert_eq!(supporting_bricks_in_layer(&layer, &vec![[1, 0]]), vec![0]);
         assert_eq!(supporting_bricks_in_layer(&layer, &vec![[1, 1]]), vec![0]);
         let layer = vec![([0, 0], 0), ([1, 0], 0), ([2, 0], 1)];
         assert_eq!(supporting_bricks_in_layer(&layer, &vec![[0, 0]]), vec![0]);
-        assert_eq!(supporting_bricks_in_layer(&layer, &vec![[1, 0]]), vec![0]); 
+        assert_eq!(supporting_bricks_in_layer(&layer, &vec![[1, 0]]), vec![0]);
         assert_eq!(supporting_bricks_in_layer(&layer, &vec![[2, 0]]), vec![1]);
-        assert_eq!(supporting_bricks_in_layer(&layer, &vec![[1, 0], [2, 0]]), vec![0, 1]);
-        assert_eq!(supporting_bricks_in_layer(&layer, &vec![[1, 0], [2, 0], [0, 0]]), vec![0, 1]); 
+        assert_eq!(
+            supporting_bricks_in_layer(&layer, &vec![[1, 0], [2, 0]]),
+            vec![0, 1]
+        );
+        assert_eq!(
+            supporting_bricks_in_layer(&layer, &vec![[1, 0], [2, 0], [0, 0]]),
+            vec![0, 1]
+        );
     }
 
     #[test]
